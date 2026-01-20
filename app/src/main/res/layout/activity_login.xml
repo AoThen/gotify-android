@@ -96,6 +96,18 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/enable_srv_lookup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/enable_srv_lookup"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="@+id/gotify_url"
+            app:layout_constraintEnd_toEndOf="@+id/gotify_url"
+            app:layout_constraintTop_toBottomOf="@+id/gotify_url"
+            app:layout_constraintWidth_max="280dp" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/username"
             android:layout_width="0dp"
@@ -176,7 +188,7 @@
             android:visibility="visible"
             app:layout_constraintEnd_toStartOf="@+id/advanced_settings"
             app:layout_constraintStart_toStartOf="@+id/gotify_url"
-            app:layout_constraintTop_toBottomOf="@+id/gotify_url"
+            app:layout_constraintTop_toBottomOf="@+id/enable_srv_lookup"
             app:layout_constraintWidth_max="280dp" />
 
         <ImageButton

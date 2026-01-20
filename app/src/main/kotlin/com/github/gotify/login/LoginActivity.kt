@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.gotify.R
 import com.github.gotify.SSLSettings
 import com.github.gotify.Settings
+import com.github.gotify.SrvLookup
+import com.github.gotify.SrvResult
 import com.github.gotify.Utils
 import com.github.gotify.api.ApiException
 import com.github.gotify.api.Callback
@@ -52,6 +54,9 @@ internal class LoginActivity : AppCompatActivity() {
     private var clientCertPath: String? = null
     private var clientCertPassword: String? = null
     private lateinit var advancedDialog: AdvancedDialog
+    private var enableSrvLookup = false
+    private var resolvedUrl: String? = null
+    private var resolvedSrvResult: SrvResult? = null
 
     private val caDialogResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -116,6 +121,12 @@ internal class LoginActivity : AppCompatActivity() {
             override fun afterTextChanged(editable: Editable) {}
         })
 
+        binding.enableSrvLookup.setOnCheckedChangeListener { _, isChecked ->
+            invalidateUrl()
+            enableSrvLookup = isChecked
+            resolvedUrl = null
+        }
+
         binding.checkurl.setOnClickListener { doCheckUrl() }
         binding.openLogs.setOnClickListener { openLogs() }
         binding.advancedSettings.setOnClickListener { toggleShowAdvanced() }
@@ -127,10 +138,12 @@ internal class LoginActivity : AppCompatActivity() {
         binding.password.visibility = View.GONE
         binding.login.visibility = View.GONE
         binding.checkurl.text = getString(R.string.check_url)
+        resolvedUrl = null
+        resolvedSrvResult = null
     }
 
     private fun doCheckUrl() {
-        val url = binding.gotifyUrlEditext.text.toString().trim().trimEnd('/')
+        var url = binding.gotifyUrlEditext.text.toString().trim().trimEnd('/')
         val parsedUrl = url.toHttpUrlOrNull()
         if (parsedUrl == null) {
             Utils.showSnackBar(this, "Invalid URL (include http:// or https://)")
@@ -143,6 +156,26 @@ internal class LoginActivity : AppCompatActivity() {
 
         binding.checkurlProgress.visibility = View.VISIBLE
         binding.checkurl.visibility = View.GONE
+
+        if (enableSrvLookup) {
+            val domain = parsedUrl.host
+            if (domain != null) {
+                val srvResult = SrvLookup.lookup(domain)
+                if (srvResult != null) {
+                    val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
+                    if (resolved != null) {
+                        resolvedUrl = resolved
+                        resolvedSrvResult = srvResult
+                        url = resolved
+                        Logger.info("Using SRV resolved URL: $url")
+                    }
+                } else {
+                    Logger.warn("SRV lookup failed, falling back to original URL")
+                    resolvedUrl = null
+                    resolvedSrvResult = null
+                }
+            }
+        }
 
         try {
             ClientFactory.versionApi(settings, tempSslSettings(), url)
@@ -231,7 +264,17 @@ internal class LoginActivity : AppCompatActivity() {
             settings.url = url
             binding.checkurlProgress.visibility = View.GONE
             binding.checkurl.visibility = View.VISIBLE
-            binding.checkurl.text = getString(R.string.found_gotify_version, version.version)
+
+            if (enableSrvLookup && resolvedSrvResult != null) {
+                binding.checkurl.text = getString(
+                    R.string.srv_lookup_resolved,
+                    resolvedSrvResult!!.host,
+                    resolvedSrvResult!!.port.toString()
+                )
+            } else {
+                binding.checkurl.text = getString(R.string.found_gotify_version, version.version)
+            }
+
             binding.username.visibility = View.VISIBLE
             binding.username.requestFocus()
             binding.password.visibility = View.VISIBLE

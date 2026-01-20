@@ -21,6 +21,9 @@ android {
         vectorDrawables.useSupportLibrary = true
         signingConfig = signingConfigs.getByName("debug")
         resValue("string", "app_name", "Gotify")
+        ndk {
+            abiFilters.add("arm64-v8a")
+        }
     }
     buildTypes {
         release {
@@ -64,10 +67,10 @@ if (project.hasProperty("sign")) {
     android {
         signingConfigs {
             create("release") {
-                storeFile = file(System.getenv("RELEASE_STORE_FILE"))
-                storePassword = System.getenv("RELEASE_STORE_PASSWORD")
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+                storeFile = file(System.getenv("SIGN_STORE_FILE") ?: "default-path/keystore.jks")
+                storePassword = System.getenv("SIGN_STORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: ""
             }
         }
     }
@@ -102,6 +105,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("org.threeten:threetenbp:1.7.1")
+    implementation("dnsjava:dnsjava:3.5.3")
 }
 
 configurations {

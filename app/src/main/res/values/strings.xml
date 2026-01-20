@@ -126,4 +126,9 @@
     <string name="notification_channel_title_low">Low priority messages (1–3)</string>
     <string name="notification_channel_title_normal">Normal priority messages (4–7)</string>
     <string name="notification_channel_title_high">High priority messages (>7)</string>
+    <string name="enable_srv_lookup">Enable SRV Lookup</string>
+    <string name="srv_lookup_enabled">SRV lookup enabled</string>
+    <string name="srv_lookup_failed">SRV lookup failed: %1$s</string>
+    <string name="srv_lookup_resolved">Resolved to %1$s:%2$s</string>
+    <string name="srv_lookup_no_records">No SRV records found for %1$s</string>
 </resources>
