@@ -177,7 +177,7 @@ internal class SettingsActivity :
             intent?.component?.let { componentName ->
                 val mainIntent = Intent.makeRestartActivityTask(componentName)
                 startActivity(mainIntent)
-                finish()
+                requireActivity().finish()
             }
         }
     }

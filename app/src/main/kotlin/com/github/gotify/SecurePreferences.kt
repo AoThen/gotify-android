@@ -25,16 +25,16 @@ internal class SecurePreferences(context: Context) {
     fun getToken(): String? = encryptedPreferences.getString("token", null)
 
     fun setToken(value: String?) {
-        encryptedPreferences.edit { putString("token", value) }
+        encryptedPreferences.edit().putString("token", value).apply()
     }
 
     fun getClientCertPassword(): String? = encryptedPreferences.getString("clientCertPass", null)
 
     fun setClientCertPassword(value: String?) {
-        encryptedPreferences.edit { putString("clientCertPass", value) }
+        encryptedPreferences.edit().putString("clientCertPass", value).apply()
     }
 
     fun clear() {
-        encryptedPreferences.edit { clear() }
+        encryptedPreferences.edit().clear().apply()
     }
 }
