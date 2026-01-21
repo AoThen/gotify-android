@@ -167,6 +167,7 @@ internal class LoginActivity : AppCompatActivity() {
                         resolvedUrl = resolved
                         resolvedSrvResult = srvResult
                         url = resolved
+                        Utils.showSnackBar(this, "SRV resolved: ${srvResult.host}:${srvResult.port}")
                     }
                 } else {
                     resolvedUrl = null
@@ -179,8 +180,7 @@ internal class LoginActivity : AppCompatActivity() {
         }
 
         try {
-            ClientFactory.versionApi(settings, tempSslSettings(), url)
-                .version
+            ClientFactory.versionApi(settings, tempSslSettings(), url).version
                 .enqueue(Callback.callInUI(this, onValidUrl(url), onInvalidUrl(url)))
         } catch (e: Exception) {
             binding.checkurlProgress.visibility = View.GONE
