@@ -96,5 +96,13 @@
 -dontwarn org.apache.oltu.oauth2.**
 -keep class org.apache.oltu.oauth2.** { *; }
 
+# DNSJava (dnsjava library) - ignore platform-specific dependencies
+-dontwarn com.sun.jna.**
+-dontwarn javax.naming.**
+-dontwarn lombok.**
+-dontwarn org.slf4j.**
+-dontwarn sun.net.spi.nameservice.**
+-keep class org.xbill.DNS.** { *; }
+
 # Obfuscate and optimize
 -renamesourcefileattribute SourceFile
