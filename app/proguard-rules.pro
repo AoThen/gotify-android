@@ -1,21 +1,100 @@
 # Add project specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.kts.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Kotlin
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
+-keep class kotlinx.coroutines.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Retrofit
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# OkHttp
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+
+# Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.gson.** { *; }
+-keep class * implements com.google.gson.TypeAdapter
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Jackson (if used by gson-fire)
+-dontwarn org.codehaus.jackson.**
+-keep class org.codehaus.jackson.** { *; }
+
+# Coil
+-keep class coil.** { *; }
+-keep interface coil.** { *; }
+-dontwarn coil.**
+
+# Markwon
+-dontwarn org.commonmark.**
+-dontwarn io.noties.markwon.**
+-keep class io.noties.markwon.** { *; }
+-keep interface io.noties.markwon.** { *; }
+
+# ThreeTenBP
+-dontwarn org.threeten.bp.**
+-keep class org.threeten.bp.** { *; }
+-keep class org.threeten.bp.format.** { *; }
+
+# Tinylog
+-dontwarn org.tinylog.**
+-keep class org.tinylog.** { *; }
+
+# AndroidX Security
+-keep class androidx.security.crypto.** { *; }
+
+# WebSocket
+-dontwarn okhttp3.internal.**
+-keep class okhttp3.internal.** { *; }
+
+# Preserve line numbers for debugging
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
+
+# Preserve native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep ViewBinding generated classes
+-keep public class * extends androidx.viewbinding.ViewBinding {
+    public static *** bind(android.view.View);
+    public static *** inflate(android.view.LayoutInflater);
+}
+
+# Keep data classes used in serialization
+-keepclassmembers class com.github.gotify.client.model.** {
+    *;
+}
+
+# Keep enum classes
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# R8 full mode
+-dontwarn org.apache.oltu.oauth2.**
+-keep class org.apache.oltu.oauth2.** { *; }
+
+# Obfuscate and optimize
+-renamesourcefileattribute SourceFile

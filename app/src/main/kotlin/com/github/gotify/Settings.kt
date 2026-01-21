@@ -7,13 +7,14 @@ import com.github.gotify.client.model.User
 
 internal class Settings(context: Context) {
     private val sharedPreferences: SharedPreferences
+    private val securePreferences: SecurePreferences
     val filesDir: String
     var url: String
         get() = sharedPreferences.getString("url", "")!!
         set(value) = sharedPreferences.edit { putString("url", value) }
     var token: String?
-        get() = sharedPreferences.getString("token", null)
-        set(value) = sharedPreferences.edit { putString("token", value) }
+        get() = securePreferences.getToken()
+        set(value) = securePreferences.setToken(value)
     var user: User? = null
         get() {
             val username = sharedPreferences.getString("username", null)
@@ -43,11 +44,12 @@ internal class Settings(context: Context) {
         get() = sharedPreferences.getString("clientCertPath", null)
         set(value) = sharedPreferences.edit { putString("clientCertPath", value) }
     var clientCertPassword: String?
-        get() = sharedPreferences.getString("clientCertPass", null)
-        set(value) = sharedPreferences.edit { putString("clientCertPass", value) }
+        get() = securePreferences.getClientCertPassword()
+        set(value) = securePreferences.setClientCertPassword(value)
 
     init {
         sharedPreferences = context.getSharedPreferences("gotify", Context.MODE_PRIVATE)
+        securePreferences = SecurePreferences(context)
         filesDir = context.filesDir.absolutePath
     }
 

@@ -84,11 +84,11 @@ internal class WebSocketConnection(
     }
 
     private fun request(): Request {
-        val url = baseUrl.toHttpUrlOrNull()!!
-            .newBuilder()
-            .addPathSegment("stream")
-            .addQueryParameter("token", token)
-            .build()
+        val url = baseUrl.toHttpUrlOrNull()?.newBuilder()
+            ?.addPathSegment("stream")
+            ?.addQueryParameter("token", token)
+            ?.build()
+            ?: throw IllegalArgumentException("Invalid baseUrl: $baseUrl")
         return Request.Builder().url(url).get().build()
     }
 

@@ -65,10 +65,10 @@ internal class LoginActivity : AppCompatActivity() {
                 requireNotNull(result.data) { "file path was null" }
 
                 val uri = result.data!!.data ?: throw IllegalArgumentException("file path was null")
-                val fileStream = contentResolver.openInputStream(uri)
-                    ?: throw IllegalArgumentException("file path was invalid")
                 val destinationFile = File(filesDir, CertUtils.CA_CERT_NAME)
-                copyStreamToFile(fileStream, destinationFile)
+                contentResolver.openInputStream(uri)?.use { fileStream ->
+                    copyStreamToFile(fileStream, destinationFile)
+                } ?: throw IllegalArgumentException("file path was invalid")
 
                 // temporarily store it (don't store to settings until they decide to login)
                 caCertCN = getNameOfCertContent(destinationFile) ?: "unknown"
@@ -86,10 +86,10 @@ internal class LoginActivity : AppCompatActivity() {
                 requireNotNull(result.data) { "file path was null" }
 
                 val uri = result.data!!.data ?: throw IllegalArgumentException("file path was null")
-                val fileStream = contentResolver.openInputStream(uri)
-                    ?: throw IllegalArgumentException("file path was invalid")
                 val destinationFile = File(filesDir, CertUtils.CLIENT_CERT_NAME)
-                copyStreamToFile(fileStream, destinationFile)
+                contentResolver.openInputStream(uri)?.use { fileStream ->
+                    copyStreamToFile(fileStream, destinationFile)
+                } ?: throw IllegalArgumentException("file path was invalid")
 
                 // temporarily store it (don't store to settings until they decide to login)
                 clientCertPath = destinationFile.absolutePath

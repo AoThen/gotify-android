@@ -4,12 +4,13 @@ plugins {
 }
 
 ext {
-    oltu_version = "1.0.2"
-    retrofit_version = "2.7.1"
+    oauth2_oidc_sdk_version = "11.0.0"
+    retrofit_version = "3.0.0"
     swagger_annotations_version = "2.0.0"
-    junit_version = "4.12"
-    threetenbp_version = "1.4.1"
-    json_fire_version = "1.8.3"
+    junit_version = "4.13.2"
+    threetenbp_version = "1.7.1"
+    json_fire_version = "1.8.5"
+    json_version = "20240303"
 }
 
 dependencies {
@@ -21,12 +22,16 @@ dependencies {
         exclude group:'org.apache.oltu.oauth2' , module: 'org.apache.oltu.oauth2.common'
         exclude group: 'org.json', module: 'json'
     }
-    implementation "org.json:json:20180130"
+    implementation "org.json:json:$json_version"
     implementation "io.gsonfire:gson-fire:$json_fire_version"
     implementation "org.threeten:threetenbp:$threetenbp_version"
 
     testImplementation "junit:junit:$junit_version"
 }
+
+// Note: org.apache.oltu.oauth2:1.0.2 has known security vulnerabilities (CVE-2018-1291, CVE-2018-1294)
+// Consider migrating to a newer OAuth library like oauth2-oidc-sdk:11.0.0 when regenerating the client code
+// This requires updating the swagger generation templates
 
 group = 'io.swagger'
 version = '1.0.0'

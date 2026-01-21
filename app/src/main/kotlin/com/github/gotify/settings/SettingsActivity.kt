@@ -58,10 +58,9 @@ internal class SettingsActivity :
         if (sharedPreferences == null) return
         when (key) {
             getString(R.string.setting_key_theme) -> {
-                ThemeHelper.setTheme(
-                    this,
-                    sharedPreferences.getString(key, getString(R.string.theme_default))!!
-                )
+                val defaultTheme = getString(R.string.theme_default)
+                val theme = sharedPreferences.getString(key, defaultTheme) ?: defaultTheme
+                ThemeHelper.setTheme(this, theme)
             }
         }
     }
@@ -175,10 +174,11 @@ internal class SettingsActivity :
             val packageManager = requireContext().packageManager
             val packageName = requireContext().packageName
             val intent = packageManager.getLaunchIntentForPackage(packageName)
-            val componentName = intent!!.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            startActivity(mainIntent)
-            Runtime.getRuntime().exit(0)
+            intent?.component?.let { componentName ->
+                val mainIntent = Intent.makeRestartActivityTask(componentName)
+                startActivity(mainIntent)
+                finish()
+            }
         }
     }
 
