@@ -1,6 +1,12 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+val currentDate: String by lazy {
+    LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+}
 
 plugins {
     id("com.android.application")
@@ -16,7 +22,7 @@ android {
         minSdk = 23
         targetSdk = 36
         versionCode = 34
-        versionName = "2.9.0"
+        versionName = currentDate
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         signingConfig = signingConfigs.getByName("debug")
@@ -72,6 +78,15 @@ android {
     lint {
         disable.add("GoogleAppIndexingWarning")
         lintConfig = file("../lint.xml")
+    }
+
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val apkName = "gotify-${variant.name}-$currentDate.apk"
+            output.outputFileName = apkName
+        }
     }
 }
 
