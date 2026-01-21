@@ -25,8 +25,19 @@ android {
             abiFilters.add("arm64-v8a")
         }
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("SIGN_STORE_FILE") ?: "")
+            storePassword = System.getenv("SIGN_STORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),
@@ -63,19 +74,7 @@ android {
     }
 }
 
-if (project.hasProperty("sign")) {
-    android {
-        signingConfigs {
-            create("release") {
-                storeFile = file(System.getenv("SIGN_STORE_FILE") ?: "default-path/keystore.jks")
-                storePassword = System.getenv("SIGN_STORE_PASSWORD") ?: ""
-                keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: ""
-                keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: ""
-            }
-        }
-    }
-    android.buildTypes.getByName("release").signingConfig = android.signingConfigs.getByName("release")
-}
+
 
 dependencies {
     val coilVersion = "2.7.0"

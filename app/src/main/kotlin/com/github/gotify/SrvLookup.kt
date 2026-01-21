@@ -24,13 +24,11 @@ internal object SrvLookup {
 
     fun lookup(domain: String): SrvResult? {
         if (domain.isBlank()) {
-            Logger.warn("Domain is blank, skipping SRV lookup")
             return null
         }
 
         val cleanDomain = domain.trim().removePrefix("_gotify._tcp.")
         val srvRecordName = "$SERVICE_PREFIX$cleanDomain"
-        Logger.info("Looking up SRV record: $srvRecordName")
 
         return try {
             val lookup = Lookup(srvRecordName, Type.SRV, DClass.IN)
@@ -38,7 +36,6 @@ internal object SrvLookup {
             val records = lookup.run()
 
             if (lookup.result != Lookup.SUCCESSFUL || records == null || records.isEmpty()) {
-                Logger.warn("SRV lookup failed: ${lookup.errorString}")
                 null
             } else {
                 val results = mutableListOf<SrvResult>()
@@ -58,19 +55,13 @@ internal object SrvLookup {
                 }
 
                 if (results.isEmpty()) {
-                    Logger.warn("No valid SRV records found for $srvRecordName")
                     null
                 } else {
-                    val bestResult = selectBestRecord(results)
-                    Logger.info(
-                        "SRV lookup successful: ${bestResult.host}:${bestResult.port} " +
-                            "(priority=${bestResult.priority}, weight=${bestResult.weight})"
-                    )
-                    bestResult
+                    selectBestRecord(results)
                 }
             }
         } catch (e: Exception) {
-            Logger.error(e, " Unexpected error during SRV lookup for $domain")
+            Logger.error(e, "SRV lookup failed for $domain")
             null
         }
     }

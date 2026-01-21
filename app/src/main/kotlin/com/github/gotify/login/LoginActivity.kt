@@ -157,7 +157,7 @@ internal class LoginActivity : AppCompatActivity() {
         binding.checkurlProgress.visibility = View.VISIBLE
         binding.checkurl.visibility = View.GONE
 
-        if (enableSrvLookup) {
+        if (binding.enableSrvLookup.isChecked) {
             val domain = parsedUrl.host
             if (domain != null) {
                 val srvResult = SrvLookup.lookup(domain)
@@ -167,14 +167,15 @@ internal class LoginActivity : AppCompatActivity() {
                         resolvedUrl = resolved
                         resolvedSrvResult = srvResult
                         url = resolved
-                        Logger.info("Using SRV resolved URL: $url")
                     }
                 } else {
-                    Logger.warn("SRV lookup failed, falling back to original URL")
                     resolvedUrl = null
                     resolvedSrvResult = null
                 }
             }
+        } else {
+            resolvedUrl = null
+            resolvedSrvResult = null
         }
 
         try {
