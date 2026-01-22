@@ -46,6 +46,12 @@ internal class Settings(context: Context) {
     var clientCertPassword: String?
         get() = securePreferences.getClientCertPassword()
         set(value) = securePreferences.setClientCertPassword(value)
+    var enableSrvLookup: Boolean
+        get() = sharedPreferences.getBoolean("enableSrvLookup", false)
+        set(value) = sharedPreferences.edit { putBoolean("enableSrvLookup", value) }
+    var originalUrl: String?
+        get() = sharedPreferences.getString("originalUrl", null)
+        set(value) = sharedPreferences.edit { putString("originalUrl", value) }
 
     init {
         sharedPreferences = context.getSharedPreferences("gotify", Context.MODE_PRIVATE)
@@ -63,6 +69,8 @@ internal class Settings(context: Context) {
         caCertPath = null
         clientCertPath = null
         clientCertPassword = null
+        enableSrvLookup = false
+        originalUrl = null
     }
 
     fun setUser(name: String?, admin: Boolean) {

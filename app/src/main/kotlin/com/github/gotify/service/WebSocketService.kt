@@ -25,6 +25,7 @@ import com.github.gotify.MissedMessageUtil
 import com.github.gotify.NotificationSupport
 import com.github.gotify.R
 import com.github.gotify.Settings
+import com.github.gotify.SrvResolver
 import com.github.gotify.Utils
 import com.github.gotify.api.Callback
 import com.github.gotify.api.ClientFactory
@@ -111,11 +112,14 @@ internal class WebSocketService : Service() {
         val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
+        val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+
         connection = WebSocketConnection(
-            settings.url,
+            resolvedUrl,
             settings.sslSettings(),
             settings.token,
-            alarmManager
+            alarmManager,
+            settings
         )
             .onOpen { onOpen() }
             .onClose { onClose() }

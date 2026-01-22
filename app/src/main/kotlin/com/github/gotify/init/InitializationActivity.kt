@@ -13,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.github.gotify.R
 import com.github.gotify.Settings
+import com.github.gotify.SrvResolver
 import com.github.gotify.api.ApiException
 import com.github.gotify.api.Callback
 import com.github.gotify.api.Callback.SuccessCallback
@@ -79,6 +80,7 @@ internal class InitializationActivity : AppCompatActivity() {
     }
 
     private fun tryAuthenticate() {
+        SrvResolver.resolveIfEnabled(settings)
         ClientFactory.userApiWithToken(settings)
             .currentUser()
             .enqueue(
@@ -167,6 +169,7 @@ internal class InitializationActivity : AppCompatActivity() {
         callback: SuccessCallback<VersionInfo>,
         errorCallback: Callback.ErrorCallback
     ) {
+        SrvResolver.resolveIfEnabled(settings)
         ClientFactory.versionApi(settings)
             .version
             .enqueue(Callback.callInUI(this, callback, errorCallback))

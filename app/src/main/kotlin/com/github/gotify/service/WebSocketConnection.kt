@@ -6,6 +6,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.github.gotify.SSLSettings
+import com.github.gotify.Settings
+import com.github.gotify.SrvResolver
 import com.github.gotify.Utils
 import com.github.gotify.api.CertUtils
 import com.github.gotify.client.model.Message
@@ -21,10 +23,11 @@ import okhttp3.WebSocketListener
 import org.tinylog.kotlin.Logger
 
 internal class WebSocketConnection(
-    private val baseUrl: String,
+    private var baseUrl: String,
     settings: SSLSettings,
     private val token: String?,
-    private val alarmManager: AlarmManager
+    private val alarmManager: AlarmManager,
+    private val settings: Settings
 ) {
     companion object {
         private val ID = AtomicLong(0)
@@ -100,6 +103,13 @@ internal class WebSocketConnection(
         close()
         state = State.Connecting
         val nextId = ID.incrementAndGet()
+
+        val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+        if (resolvedUrl != baseUrl) {
+            Logger.info("WebSocket($nextId): URL re-resolved from $baseUrl to $resolvedUrl")
+            baseUrl = resolvedUrl
+        }
+
         Logger.info("WebSocket($nextId): starting...")
 
         webSocket = client.newWebSocket(request(), Listener(nextId))

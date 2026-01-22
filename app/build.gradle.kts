@@ -56,6 +56,12 @@ android {
             isDebuggable = true
             resValue("string", "app_name", "Gotify DEV")
         }
+        debug {
+            isDebuggable = true
+            isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+            resValue("string", "app_name", "Gotify DEBUG")
+        }
     }
     buildFeatures {
         viewBinding = true

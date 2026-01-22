@@ -127,6 +127,11 @@ internal class LoginActivity : AppCompatActivity() {
             resolvedUrl = null
         }
 
+        if (settings.enableSrvLookup) {
+            binding.enableSrvLookup.isChecked = true
+        }
+        enableSrvLookup = settings.enableSrvLookup
+
         binding.checkurl.setOnClickListener { doCheckUrl() }
         binding.openLogs.setOnClickListener { openLogs() }
         binding.advancedSettings.setOnClickListener { toggleShowAdvanced() }
@@ -167,6 +172,7 @@ internal class LoginActivity : AppCompatActivity() {
                         resolvedUrl = resolved
                         resolvedSrvResult = srvResult
                         url = resolved
+                        settings.originalUrl = url
                         Utils.showSnackBar(this, "SRV resolved: ${srvResult.host}:${srvResult.port}")
                     }
                 } else {
@@ -177,6 +183,7 @@ internal class LoginActivity : AppCompatActivity() {
         } else {
             resolvedUrl = null
             resolvedSrvResult = null
+            settings.originalUrl = url
         }
 
         try {
@@ -263,6 +270,7 @@ internal class LoginActivity : AppCompatActivity() {
     private fun onValidUrl(url: String): SuccessCallback<VersionInfo> {
         return Callback.SuccessBody { version ->
             settings.url = url
+            settings.enableSrvLookup = enableSrvLookup
             binding.checkurlProgress.visibility = View.GONE
             binding.checkurl.visibility = View.VISIBLE
 
