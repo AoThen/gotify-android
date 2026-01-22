@@ -39,6 +39,18 @@ android {
             keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: ""
             keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: ""
         }
+        create("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+        create("development") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
@@ -54,12 +66,14 @@ android {
         register("development") {
             applicationIdSuffix = ".dev"
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("development")
             resValue("string", "app_name", "Gotify DEV")
         }
         debug {
             isDebuggable = true
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("debug")
             resValue("string", "app_name", "Gotify DEBUG")
         }
     }
