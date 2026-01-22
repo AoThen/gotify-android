@@ -7,9 +7,7 @@ import org.xbill.DNS.Lookup
 import org.xbill.DNS.SRVRecord
 import org.xbill.DNS.Type
 
-internal data class SrvResult(
-    val host: String, val port: Int, val priority: Int, val weight: Int
-)
+internal data class SrvResult(val host: String, val port: Int, val priority: Int, val weight: Int)
 
 internal object SrvLookup {
 
