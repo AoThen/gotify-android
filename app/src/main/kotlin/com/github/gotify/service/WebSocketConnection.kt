@@ -24,7 +24,7 @@ import org.tinylog.kotlin.Logger
 
 internal class WebSocketConnection(
     private var baseUrl: String,
-    settings: SSLSettings,
+    sslSettings: SSLSettings,
     private val token: String?,
     private val alarmManager: AlarmManager,
     private val settings: Settings
@@ -52,7 +52,7 @@ internal class WebSocketConnection(
             .readTimeout(0, TimeUnit.MILLISECONDS)
             .pingInterval(1, TimeUnit.MINUTES)
             .connectTimeout(10, TimeUnit.SECONDS)
-        CertUtils.applySslSettings(builder, settings)
+        CertUtils.applySslSettings(builder, sslSettings)
         client = builder.build()
     }
 

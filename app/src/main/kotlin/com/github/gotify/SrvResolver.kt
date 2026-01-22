@@ -53,11 +53,16 @@ internal object SrvResolver {
     }
 
     fun getResolvedUrl(settings: Settings): String {
-        if (!settings.enableSrvLookup || settings.originalUrl.isNullOrBlank()) {
+        if (!settings.enableSrvLookup) {
             return settings.url
         }
 
-        val parsedOriginal = settings.originalUrl.toHttpUrlOrNull()
+        val originalUrl = settings.originalUrl
+        if (originalUrl.isNullOrBlank()) {
+            return settings.url
+        }
+
+        val parsedOriginal = originalUrl.toHttpUrlOrNull()
         if (parsedOriginal == null) {
             return settings.url
         }
@@ -69,7 +74,7 @@ internal object SrvResolver {
             return settings.url
         }
 
-        val resolved = SrvLookup.buildResolvedUrl(settings.originalUrl, srvResult)
+        val resolved = SrvLookup.buildResolvedUrl(originalUrl, srvResult)
         return resolved ?: settings.url
     }
 }

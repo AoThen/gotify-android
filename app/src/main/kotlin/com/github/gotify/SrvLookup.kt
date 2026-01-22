@@ -1,9 +1,6 @@
 package com.github.gotify
 
 import org.tinylog.kotlin.Logger
-import org.xbill.DNS.AAAARecord
-import org.xbill.DNS.ARecord
-import org.xbill.DNS.DClass
 import org.xbill.DNS.Lookup
 import org.xbill.DNS.Name
 import org.xbill.DNS.Record

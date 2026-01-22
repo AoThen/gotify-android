@@ -173,7 +173,10 @@ internal class LoginActivity : AppCompatActivity() {
                         resolvedSrvResult = srvResult
                         url = resolved
                         settings.originalUrl = url
-                        Utils.showSnackBar(this, "SRV resolved: ${srvResult.host}:${srvResult.port}")
+                        Utils.showSnackBar(
+                            this,
+                            "SRV resolved: ${srvResult.host}:${srvResult.port}"
+                        )
                     }
                 } else {
                     resolvedUrl = null
