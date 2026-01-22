@@ -39,12 +39,6 @@ android {
             keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: ""
             keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: ""
         }
-        create("debug") {
-            storeFile = file("debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
         create("development") {
             storeFile = file("debug.keystore")
             storePassword = "android"
