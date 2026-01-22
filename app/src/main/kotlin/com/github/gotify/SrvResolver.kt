@@ -22,11 +22,7 @@ internal object SrvResolver {
             return settings.url
         }
 
-        val domain = parsedOriginal.host
-        if (domain == null) {
-            Logger.debug("SRV lookup enabled but original URL has no host: $originalUrl")
-            return settings.url
-        }
+        val domain = parsedOriginal.host!!
 
         Logger.info("SRV lookup enabled, re-resolving for domain: $domain")
 

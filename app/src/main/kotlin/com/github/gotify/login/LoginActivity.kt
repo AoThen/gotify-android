@@ -163,25 +163,23 @@ internal class LoginActivity : AppCompatActivity() {
         binding.checkurl.visibility = View.GONE
 
         if (binding.enableSrvLookup.isChecked) {
-            val domain = parsedUrl.host
-            if (domain != null) {
-                val srvResult = SrvLookup.lookup(domain)
-                if (srvResult != null) {
-                    val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
-                    if (resolved != null) {
-                        resolvedUrl = resolved
-                        resolvedSrvResult = srvResult
-                        url = resolved
-                        settings.originalUrl = url
-                        Utils.showSnackBar(
-                            this,
-                            "SRV resolved: ${srvResult.host}:${srvResult.port}"
-                        )
-                    }
-                } else {
-                    resolvedUrl = null
-                    resolvedSrvResult = null
+            val domain = parsedUrl.host!!
+            val srvResult = SrvLookup.lookup(domain)
+            if (srvResult != null) {
+                val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
+                if (resolved != null) {
+                    resolvedUrl = resolved
+                    resolvedSrvResult = srvResult
+                    url = resolved
+                    settings.originalUrl = url
+                    Utils.showSnackBar(
+                        this,
+                        "SRV resolved: ${srvResult.host}:${srvResult.port}"
+                    )
                 }
+            } else {
+                resolvedUrl = null
+                resolvedSrvResult = null
             }
         } else {
             resolvedUrl = null
