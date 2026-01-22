@@ -1,12 +1,11 @@
 package com.github.gotify
 
+import kotlin.random.Random
 import org.tinylog.kotlin.Logger
+import org.xbill.DNS.DClass
 import org.xbill.DNS.Lookup
-import org.xbill.DNS.Name
-import org.xbill.DNS.Record
 import org.xbill.DNS.SRVRecord
 import org.xbill.DNS.Type
-import kotlin.random.Random
 
 internal data class SrvResult(
     val host: String,
