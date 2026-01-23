@@ -1,6 +1,8 @@
 package com.github.gotify
 
 import kotlin.random.Random
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 import org.xbill.DNS.DClass
 import org.xbill.DNS.Lookup
@@ -13,21 +15,21 @@ internal object SrvLookup {
 
     private const val SERVICE_PREFIX = "_gotify._tcp."
 
-    fun lookup(domain: String): SrvResult? {
+    suspend fun lookup(domain: String): SrvResult? = withContext(Dispatchers.IO) {
         if (domain.isBlank()) {
-            return null
+            return@withContext null
         }
 
         val cleanDomain = domain.trim().removePrefix("_gotify._tcp.")
         val srvRecordName = "$SERVICE_PREFIX$cleanDomain"
 
-        return try {
+        try {
             val lookup = Lookup(srvRecordName, Type.SRV, DClass.IN)
             lookup.setCache(null)
             val records = lookup.run()
 
             if (lookup.result != Lookup.SUCCESSFUL || records == null || records.isEmpty()) {
-                null
+                return@withContext null
             } else {
                 val results = mutableListOf<SrvResult>()
                 for (record in records) {
@@ -46,14 +48,14 @@ internal object SrvLookup {
                 }
 
                 if (results.isEmpty()) {
-                    null
+                    return@withContext null
                 } else {
                     selectBestRecord(results)
                 }
             }
         } catch (e: Exception) {
             Logger.error(e, "SRV lookup failed for $domain")
-            null
+            return@withContext null
         }
     }
 

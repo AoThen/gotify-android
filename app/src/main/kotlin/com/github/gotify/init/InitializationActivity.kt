@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.github.gotify.R
 import com.github.gotify.Settings
 import com.github.gotify.SrvResolver
@@ -27,6 +28,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.livinglifetechway.quickpermissionskotlin.runWithPermissions
 import com.livinglifetechway.quickpermissionskotlin.util.QuickPermissionsOptions
 import com.livinglifetechway.quickpermissionskotlin.util.QuickPermissionsRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 
 internal class InitializationActivity : AppCompatActivity() {
@@ -80,16 +84,27 @@ internal class InitializationActivity : AppCompatActivity() {
     }
 
     private fun tryAuthenticate() {
-        SrvResolver.resolveIfEnabled(settings)
-        ClientFactory.userApiWithToken(settings)
-            .currentUser()
-            .enqueue(
-                Callback.callInUI(
-                    this,
-                    onSuccess = Callback.SuccessBody { user -> authenticated(user) },
-                    onError = { exception -> failed(exception) }
-                )
-            )
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                SrvResolver.resolveIfEnabled(settings)
+                withContext(Dispatchers.Main) {
+                    ClientFactory.userApiWithToken(settings)
+                        .currentUser()
+                        .enqueue(
+                            Callback.callInUI(
+                                this@InitializationActivity,
+                                onSuccess = Callback.SuccessBody { user -> authenticated(user) },
+                                onError = { exception -> failed(exception) }
+                            )
+                        )
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    stopSlashScreen()
+                    dialog(getString(R.string.not_available, settings.url))
+                }
+            }
+        }
     }
 
     private fun failed(exception: ApiException) {
@@ -169,10 +184,14 @@ internal class InitializationActivity : AppCompatActivity() {
         callback: SuccessCallback<VersionInfo>,
         errorCallback: Callback.ErrorCallback
     ) {
-        SrvResolver.resolveIfEnabled(settings)
-        ClientFactory.versionApi(settings)
-            .version
-            .enqueue(Callback.callInUI(this, callback, errorCallback))
+        lifecycleScope.launch(Dispatchers.IO) {
+            SrvResolver.resolveIfEnabled(settings)
+            withContext(Dispatchers.Main) {
+                ClientFactory.versionApi(settings)
+                    .version
+                    .enqueue(Callback.callInUI(this@InitializationActivity, callback, errorCallback))
+            }
+        }
     }
 
     private fun runWithPostNotificationsPermission(action: () -> Unit) {

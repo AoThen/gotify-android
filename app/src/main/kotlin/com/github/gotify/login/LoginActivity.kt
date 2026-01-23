@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.github.gotify.R
 import com.github.gotify.SSLSettings
 import com.github.gotify.Settings
@@ -41,6 +42,9 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.security.cert.X509Certificate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.tinylog.kotlin.Logger
 
@@ -163,30 +167,38 @@ internal class LoginActivity : AppCompatActivity() {
         binding.checkurl.visibility = View.GONE
 
         if (binding.enableSrvLookup.isChecked) {
-            val domain = parsedUrl.host!!
-            val srvResult = SrvLookup.lookup(domain)
-            if (srvResult != null) {
-                val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
-                if (resolved != null) {
-                    resolvedUrl = resolved
-                    resolvedSrvResult = srvResult
-                    url = resolved
-                    settings.originalUrl = url
-                    Utils.showSnackBar(
-                        this,
-                        "SRV resolved: ${srvResult.host}:${srvResult.port}"
-                    )
+            lifecycleScope.launch(Dispatchers.IO) {
+                val domain = parsedUrl.host!!
+                val srvResult = SrvLookup.lookup(domain)
+                withContext(Dispatchers.Main) {
+                    if (srvResult != null) {
+                        val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
+                        if (resolved != null) {
+                            resolvedUrl = resolved
+                            resolvedSrvResult = srvResult
+                            url = resolved
+                            settings.originalUrl = url
+                            Utils.showSnackBar(
+                                this@LoginActivity,
+                                "SRV resolved: ${srvResult.host}:${srvResult.port}"
+                            )
+                        }
+                    } else {
+                        resolvedUrl = null
+                        resolvedSrvResult = null
+                    }
+                    continueUrlCheck(url)
                 }
-            } else {
-                resolvedUrl = null
-                resolvedSrvResult = null
             }
         } else {
             resolvedUrl = null
             resolvedSrvResult = null
             settings.originalUrl = url
+            continueUrlCheck(url)
         }
+    }
 
+    private fun continueUrlCheck(url: String) {
         try {
             ClientFactory.versionApi(settings, tempSslSettings(), url).version
                 .enqueue(Callback.callInUI(this, onValidUrl(url), onInvalidUrl(url)))
