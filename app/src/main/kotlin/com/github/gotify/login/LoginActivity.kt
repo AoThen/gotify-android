@@ -41,6 +41,9 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.security.cert.X509Certificate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.tinylog.kotlin.Logger
 
@@ -162,39 +165,53 @@ internal class LoginActivity : AppCompatActivity() {
         binding.checkurlProgress.visibility = View.VISIBLE
         binding.checkurl.visibility = View.GONE
 
-        if (binding.enableSrvLookup.isChecked) {
-            val domain = parsedUrl.host!!
-            val srvResult = SrvLookup.lookup(domain)
-            if (srvResult != null) {
-                val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
-                if (resolved != null) {
-                    resolvedUrl = resolved
-                    resolvedSrvResult = srvResult
-                    url = resolved
-                    settings.originalUrl = url
-                    Utils.showSnackBar(
-                        this,
-                        "SRV resolved: ${srvResult.host}:${srvResult.port}"
-                    )
+        lifecycleScope.launch(Dispatchers.IO) {
+            var localResolvedUrl: String? = null
+            var localResolvedSrvResult: SrvResult? = null
+
+            if (binding.enableSrvLookup.isChecked) {
+                val domain = parsedUrl.host!!
+                val srvResult = SrvLookup.lookup(domain)
+                if (srvResult != null) {
+                    val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
+                    if (resolved != null) {
+                        localResolvedUrl = resolved
+                        localResolvedSrvResult = srvResult
+                        url = resolved
+                        withContext(Dispatchers.Main) {
+                            settings.originalUrl = url
+                            Utils.showSnackBar(
+                                this@LoginActivity,
+                                "SRV resolved: ${srvResult.host}:${srvResult.port}"
+                            )
+                        }
+                    }
                 }
             } else {
-                resolvedUrl = null
-                resolvedSrvResult = null
+                withContext(Dispatchers.Main) {
+                    settings.originalUrl = url
+                }
             }
-        } else {
-            resolvedUrl = null
-            resolvedSrvResult = null
-            settings.originalUrl = url
-        }
 
-        try {
-            ClientFactory.versionApi(settings, tempSslSettings(), url).version
-                .enqueue(Callback.callInUI(this, onValidUrl(url), onInvalidUrl(url)))
-        } catch (e: Exception) {
-            binding.checkurlProgress.visibility = View.GONE
-            binding.checkurl.visibility = View.VISIBLE
-            val errorMsg = getString(R.string.version_failed, "$url/version", e.message)
-            Utils.showSnackBar(this, errorMsg)
+            withContext(Dispatchers.Main) {
+                resolvedUrl = localResolvedUrl
+                resolvedSrvResult = localResolvedSrvResult
+                try {
+                    ClientFactory.versionApi(settings, tempSslSettings(), url).version
+                        .enqueue(
+                            Callback.callInUI(
+                                this@LoginActivity,
+                                onValidUrl(url),
+                                onInvalidUrl(url)
+                            )
+                        )
+                } catch (e: Exception) {
+                    binding.checkurlProgress.visibility = View.GONE
+                    binding.checkurl.visibility = View.VISIBLE
+                    val errorMsg = getString(R.string.version_failed, "$url/version", e.message)
+                    Utils.showSnackBar(this@LoginActivity, errorMsg)
+                }
+            }
         }
     }
 
