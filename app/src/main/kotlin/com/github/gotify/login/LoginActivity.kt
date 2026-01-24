@@ -166,16 +166,23 @@ internal class LoginActivity : AppCompatActivity() {
         binding.checkurlProgress.visibility = View.VISIBLE
         binding.checkurl.visibility = View.GONE
 
+        Logger.info("doCheckUrl: enableSrvLookup = $enableSrvLookup, url = $url")
+
         lifecycleScope.launch(Dispatchers.IO) {
             var localResolvedUrl: String? = null
             var localResolvedSrvResult: SrvResult? = null
 
-            if (binding.enableSrvLookup.isChecked) {
+            if (enableSrvLookup) {
                 val domain = parsedUrl.host!!
+                Logger.info("SRV lookup for domain: $domain")
+
                 val srvResult = SrvLookup.lookup(domain)
                 if (srvResult != null) {
+                    Logger.info("SRV record found: host=${srvResult.host}, port=${srvResult.port}")
+
                     val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
                     if (resolved != null) {
+                        Logger.info("SRV resolved URL: $resolved")
                         localResolvedUrl = resolved
                         localResolvedSrvResult = srvResult
                         url = resolved
@@ -186,13 +193,19 @@ internal class LoginActivity : AppCompatActivity() {
                                 "SRV resolved: ${srvResult.host}:${srvResult.port}"
                             )
                         }
+                    } else {
+                        Logger.warn("Failed to build resolved URL from SRV record")
                     }
+                } else {
+                    Logger.warn("SRV lookup failed for domain: $domain")
                 }
             } else {
                 withContext(Dispatchers.Main) {
                     settings.originalUrl = url
                 }
             }
+
+            Logger.info("Final URL for API call: $url")
 
             withContext(Dispatchers.Main) {
                 resolvedUrl = localResolvedUrl
