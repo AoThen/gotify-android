@@ -41,7 +41,10 @@ import com.github.gotify.messages.MessagesActivity
 import io.noties.markwon.Markwon
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 
 internal class WebSocketService : Service() {
@@ -113,25 +116,31 @@ internal class WebSocketService : Service() {
         val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
-        val resolvedUrl = runBlocking { SrvResolver.resolveIfEnabled(settings) }
+        GlobalScope.launch(Dispatchers.IO) {
+            val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
 
-        connection = WebSocketConnection(
-            resolvedUrl,
-            settings.sslSettings(),
-            settings.token,
-            alarmManager,
-            settings
-        )
-            .onOpen { onOpen() }
-            .onClose { onClose() }
-            .onFailure { status, minutes -> onFailure(status, minutes) }
-            .onMessage { message -> onMessage(message) }
-            .onReconnected { notifyMissedNotifications() }
-            .start()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            cm.registerDefaultNetworkCallback(networkCallback)
+            val conn = WebSocketConnection(
+                resolvedUrl,
+                settings.sslSettings(),
+                settings.token,
+                alarmManager,
+                settings
+            )
+                .onOpen { onOpen() }
+                .onClose { onClose() }
+                .onFailure { status, minutes -> onFailure(status, minutes) }
+                .onMessage { message -> onMessage(message) }
+                .onReconnected { notifyMissedNotifications() }
+            connection = conn
+            conn.start()
+
+            withContext(Dispatchers.Main) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    cm.registerDefaultNetworkCallback(networkCallback)
+                }
+                fetchApps()
+            }
         }
-        fetchApps()
     }
 
     private fun fetchApps() {

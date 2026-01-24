@@ -104,7 +104,19 @@ internal class InitializationActivity : AppCompatActivity() {
         stopSlashScreen()
         when (exception.code) {
             0 -> {
-                dialog(getString(R.string.not_available, settings.url))
+                lifecycleScope.launch {
+                    val newUrl = withContext(Dispatchers.IO) {
+                        SrvResolver.resolveIfEnabled(settings)
+                    }
+                    val originalUrl = settings.originalUrl ?: settings.url
+                    if (newUrl != originalUrl) {
+                        Logger.info("SRV re-resolved: $originalUrl -> $newUrl, retrying")
+                        tryAuthenticate()
+                    } else {
+                        Logger.warn("SRV re-resolved but URL unchanged, showing error")
+                        dialog(getString(R.string.not_available, settings.url))
+                    }
+                }
                 return
             }
 

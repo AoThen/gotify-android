@@ -14,7 +14,8 @@ import com.github.gotify.client.model.Message
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -97,7 +98,7 @@ internal class WebSocketConnection(
     }
 
     @Synchronized
-    fun start(): WebSocketConnection {
+    suspend fun start(): WebSocketConnection {
         if (state == State.Connecting || state == State.Connected) {
             return this
         }
@@ -105,7 +106,7 @@ internal class WebSocketConnection(
         state = State.Connecting
         val nextId = ID.incrementAndGet()
 
-        val resolvedUrl = runBlocking { SrvResolver.resolveIfEnabled(settings) }
+        val resolvedUrl = withContext(Dispatchers.IO) { SrvResolver.resolveIfEnabled(settings) }
         if (resolvedUrl != baseUrl) {
             Logger.info("WebSocket($nextId): URL re-resolved from $baseUrl to $resolvedUrl")
             baseUrl = resolvedUrl
@@ -218,6 +219,10 @@ internal class WebSocketConnection(
                 val minutes = (errorCount * 2 - 1).coerceAtMost(20)
 
                 onFailure.execute(response?.message ?: "unreachable", minutes)
+
+                if (t is java.net.UnknownHostException) {
+                    Logger.warn("WebSocket($id): unknown host, scheduling reconnect")
+                }
                 scheduleReconnect(id, TimeUnit.MINUTES.toSeconds(minutes.toLong()))
             }
             super.onFailure(webSocket, t, response)

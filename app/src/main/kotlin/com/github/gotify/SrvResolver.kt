@@ -26,27 +26,28 @@ internal object SrvResolver {
 
         val domain = parsedOriginal.host!!
 
-        Logger.info("SRV lookup enabled, re-resolving for domain: $domain")
+        Logger.info("SRV lookup enabled, re-resolving domain: $domain (original: $originalUrl)")
 
         val srvResult = withContext(Dispatchers.IO) { SrvLookup.lookup(domain) }
         if (srvResult == null) {
-            Logger.warn("SRV lookup failed for $domain, using original URL")
-            val resolvedUrl = settings.url
-            settings.url = originalUrl
-            return resolvedUrl
+            Logger.warn("SRV lookup failed for $domain, using original URL: $originalUrl")
+            return settings.url
         }
+
         val resolved = withContext(Dispatchers.IO) {
             SrvLookup.buildResolvedUrl(originalUrl, srvResult)
         }
         if (resolved == null) {
-            Logger.warn("Failed to build resolved URL for SRV result, using original URL")
-            val resolvedUrl = settings.url
-            settings.url = originalUrl
-            return resolvedUrl
+            Logger.warn(
+                "Failed to build resolved URL for SRV result, using original URL: $originalUrl"
+            )
+            return settings.url
         }
 
-        Logger.info("SRV re-resolved to: ${srvResult.host}:${srvResult.port}")
-        settings.url = resolved
+        Logger.info(
+            "SRV resolved: $originalUrl -> $resolved " +
+                "(host: ${srvResult.host}, port: ${srvResult.port})"
+        )
         return resolved
     }
 
