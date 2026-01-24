@@ -15,7 +15,7 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -98,7 +98,7 @@ internal class WebSocketConnection(
     }
 
     @Synchronized
-    suspend fun start(): WebSocketConnection {
+    fun start(): WebSocketConnection {
         if (state == State.Connecting || state == State.Connected) {
             return this
         }
@@ -106,7 +106,9 @@ internal class WebSocketConnection(
         state = State.Connecting
         val nextId = ID.incrementAndGet()
 
-        val resolvedUrl = withContext(Dispatchers.IO) { SrvResolver.resolveIfEnabled(settings) }
+        val resolvedUrl = runBlocking(Dispatchers.IO) {
+            SrvResolver.resolveIfEnabled(settings)
+        }
         if (resolvedUrl != baseUrl) {
             Logger.info("WebSocket($nextId): URL re-resolved from $baseUrl to $resolvedUrl")
             baseUrl = resolvedUrl
