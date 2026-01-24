@@ -1,9 +1,9 @@
 package com.github.gotify
 
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import org.tinylog.kotlin.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import org.tinylog.kotlin.Logger
 
 internal object SrvResolver {
 
@@ -35,7 +35,9 @@ internal object SrvResolver {
             settings.url = originalUrl
             return resolvedUrl
         }
-        val resolved = withContext(Dispatchers.IO) { SrvLookup.buildResolvedUrl(originalUrl, srvResult) }
+        val resolved = withContext(Dispatchers.IO) {
+            SrvLookup.buildResolvedUrl(originalUrl, srvResult)
+        }
         if (resolved == null) {
             Logger.warn("Failed to build resolved URL for SRV result, using original URL")
             val resolvedUrl = settings.url
