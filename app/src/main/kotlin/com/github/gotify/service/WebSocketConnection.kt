@@ -18,6 +18,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import kotlinx.coroutines.runBlocking
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import org.tinylog.kotlin.Logger
@@ -95,7 +96,7 @@ internal class WebSocketConnection(
         return Request.Builder().url(url).get().build()
     }
 
-    @Synchronized
+        @Synchronized
     fun start(): WebSocketConnection {
         if (state == State.Connecting || state == State.Connected) {
             return this
@@ -104,7 +105,7 @@ internal class WebSocketConnection(
         state = State.Connecting
         val nextId = ID.incrementAndGet()
 
-        val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+        val resolvedUrl = runBlocking { SrvResolver.resolveIfEnabled(settings) }
         if (resolvedUrl != baseUrl) {
             Logger.info("WebSocket($nextId): URL re-resolved from $baseUrl to $resolvedUrl")
             baseUrl = resolvedUrl

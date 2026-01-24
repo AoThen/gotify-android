@@ -1,27 +1,25 @@
 package com.github.gotify
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.tinylog.kotlin.Logger
 
 internal object SrvResolver {
 
-    suspend fun resolveIfEnabled(settings: Settings): String = withContext(Dispatchers.IO) {
+    suspend fun resolveIfEnabled(settings: Settings): String {
         if (!settings.enableSrvLookup) {
-            return@withContext settings.url
+            return settings.url
         }
 
         val originalUrl = settings.originalUrl
         if (originalUrl.isNullOrBlank()) {
             Logger.debug("SRV lookup enabled but no original URL stored")
-            return@withContext settings.url
+            return settings.url
         }
 
         val parsedOriginal = originalUrl.toHttpUrlOrNull()
         if (parsedOriginal == null) {
             Logger.debug("SRV lookup enabled but original URL is invalid: $originalUrl")
-            return@withContext settings.url
+            return settings.url
         }
 
         val domain = parsedOriginal.host!!
@@ -33,7 +31,7 @@ internal object SrvResolver {
             Logger.warn("SRV lookup failed for $domain, using original URL")
             val resolvedUrl = settings.url
             settings.url = originalUrl
-            return@withContext resolvedUrl
+            return resolvedUrl
         }
 
         val resolved = SrvLookup.buildResolvedUrl(originalUrl, srvResult)
@@ -41,38 +39,38 @@ internal object SrvResolver {
             Logger.warn("Failed to build resolved URL for SRV result, using original URL")
             val resolvedUrl = settings.url
             settings.url = originalUrl
-            return@withContext resolvedUrl
+            return resolvedUrl
         }
 
         Logger.info("SRV re-resolved to: ${srvResult.host}:${srvResult.port}")
         val oldUrl = settings.url
         settings.url = resolved
-        return@withContext oldUrl
+        return oldUrl
     }
 
-    suspend fun getResolvedUrl(settings: Settings): String = withContext(Dispatchers.IO) {
+    fun getResolvedUrl(settings: Settings): String {
         if (!settings.enableSrvLookup) {
-            return@withContext settings.url
+            return settings.url
         }
 
         val originalUrl = settings.originalUrl
         if (originalUrl.isNullOrBlank()) {
-            return@withContext settings.url
+            return settings.url
         }
 
         val parsedOriginal = originalUrl.toHttpUrlOrNull()
         if (parsedOriginal == null) {
-            return@withContext settings.url
+            return settings.url
         }
 
-        val domain = parsedOriginal.host ?: return@withContext settings.url
+        val domain = parsedOriginal.host ?: return settings.url
 
         val srvResult = SrvLookup.lookup(domain)
         if (srvResult == null) {
-            return@withContext settings.url
+            return settings.url
         }
 
         val resolved = SrvLookup.buildResolvedUrl(originalUrl, srvResult)
-        return@withContext resolved ?: settings.url
+        return resolved ?: settings.url
     }
 }

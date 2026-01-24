@@ -34,10 +34,16 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("SIGN_STORE_FILE") ?: "debug.keystore")
-            storePassword = System.getenv("SIGN_STORE_PASSWORD") ?: "android"
-            keyAlias = System.getenv("SIGN_KEY_ALIAS") ?: "androiddebugkey"
-            keyPassword = System.getenv("SIGN_KEY_PASSWORD") ?: "android"
+            val storeFile = System.getenv("SIGN_STORE_FILE")
+            val storePassword = System.getenv("SIGN_STORE_PASSWORD")
+            val keyAlias = System.getenv("SIGN_KEY_ALIAS")
+            val keyPassword = System.getenv("SIGN_KEY_PASSWORD")
+            if (storeFile != null && storePassword != null && keyAlias != null && keyPassword != null) {
+                this.storeFile = file(storeFile)
+                this.storePassword = storePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
         }
         create("development") {
             storeFile = file("debug.keystore")
@@ -49,7 +55,10 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning != null && releaseSigning.storeFile?.exists() == true) {
+                signingConfig = releaseSigning
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

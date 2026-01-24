@@ -39,6 +39,7 @@ import com.github.gotify.messages.Extras
 import com.github.gotify.messages.IntentUrlDialogActivity
 import com.github.gotify.messages.MessagesActivity
 import io.noties.markwon.Markwon
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import org.tinylog.kotlin.Logger
@@ -112,7 +113,7 @@ internal class WebSocketService : Service() {
         val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
-        val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+        val resolvedUrl = runBlocking { SrvResolver.resolveIfEnabled(settings) }
 
         connection = WebSocketConnection(
             resolvedUrl,
