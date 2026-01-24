@@ -325,6 +325,7 @@ internal class LoginActivity : AppCompatActivity() {
 
     private fun onInvalidUrl(url: String): Callback.ErrorCallback {
         return Callback.ErrorCallback { exception ->
+            Logger.error(exception, "API call failed for URL: $url")
             binding.checkurlProgress.visibility = View.GONE
             binding.checkurl.visibility = View.VISIBLE
             Utils.showSnackBar(this, versionError(url, exception))
