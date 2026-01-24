@@ -112,11 +112,13 @@ internal class InitializationActivity : AppCompatActivity() {
                 dialog(getString(R.string.auth_failed))
                 return
             }
-        }
 
-        var response = exception.body
-        response = response.take(200)
-        dialog(getString(R.string.other_error, settings.url, exception.code, response))
+            else -> {
+                var response = exception.body
+                response = response.take(200)
+                dialog(getString(R.string.other_error, settings.url, exception.code, response))
+            }
+        }
     }
 
     private fun dialog(message: String) {

@@ -46,9 +46,8 @@ internal object SrvResolver {
         }
 
         Logger.info("SRV re-resolved to: ${srvResult.host}:${srvResult.port}")
-        val oldUrl = settings.url
         settings.url = resolved
-        return oldUrl
+        return resolved
     }
 
     fun getResolvedUrl(settings: Settings): String {
