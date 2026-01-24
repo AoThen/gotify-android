@@ -29,14 +29,21 @@ import com.livinglifetechway.quickpermissionskotlin.runWithPermissions
 import com.livinglifetechway.quickpermissionskotlin.util.QuickPermissionsOptions
 import com.livinglifetechway.quickpermissionskotlin.util.QuickPermissionsRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 
 internal class InitializationActivity : AppCompatActivity() {
 
+    companion object {
+        private const val MAX_RETRIES = 3
+        private const val RETRY_DELAY_MS = 2000L
+    }
+
     private lateinit var settings: Settings
     private var splashScreenActive = true
+    private var retryCount = 0
 
     @RequiresApi(Build.VERSION_CODES.S)
     private val activityResultLauncher =
@@ -85,9 +92,17 @@ internal class InitializationActivity : AppCompatActivity() {
 
     private fun tryAuthenticate() {
         lifecycleScope.launch(Dispatchers.IO) {
-            SrvResolver.resolveIfEnabled(settings)
+            val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+            val originalUrl = settings.originalUrl ?: settings.url
+            val urlToUse = if (resolvedUrl != originalUrl && resolvedUrl != settings.url) {
+                Logger.info("SRV resolved: $originalUrl -> $resolvedUrl")
+                resolvedUrl
+            } else {
+                Logger.info("SRV lookup failed or unchanged, using: $originalUrl")
+                originalUrl
+            }
             withContext(Dispatchers.Main) {
-                ClientFactory.userApiWithToken(settings)
+                ClientFactory.userApiWithTokenWithUrl(settings, urlToUse)
                     .currentUser()
                     .enqueue(
                         Callback.callInUI(
@@ -104,25 +119,25 @@ internal class InitializationActivity : AppCompatActivity() {
         stopSlashScreen()
         when (exception.code) {
             0 -> {
-                lifecycleScope.launch {
-                    val newUrl = withContext(Dispatchers.IO) {
-                        SrvResolver.resolveIfEnabled(settings)
-                    }
-                    val originalUrl = settings.originalUrl ?: settings.url
-                    if (newUrl != originalUrl) {
-                        Logger.info("SRV re-resolved: $originalUrl -> $newUrl, retrying")
+                if (retryCount < MAX_RETRIES) {
+                    retryCount++
+                    Logger.info(
+                        "API call failed, retry attempt $retryCount/$MAX_RETRIES " +
+                            "in ${RETRY_DELAY_MS}ms"
+                    )
+                    lifecycleScope.launch {
+                        delay(RETRY_DELAY_MS)
                         tryAuthenticate()
-                    } else {
-                        Logger.warn("SRV re-resolved but URL unchanged, showing error")
-                        dialog(getString(R.string.not_available, settings.url))
                     }
+                } else {
+                    retryCount = 0
+                    Logger.error("Max retries ($MAX_RETRIES) reached, giving up")
+                    dialog(getString(R.string.not_available, settings.url))
                 }
-                return
             }
 
             401 -> {
                 dialog(getString(R.string.auth_failed))
-                return
             }
 
             else -> {
@@ -161,6 +176,7 @@ internal class InitializationActivity : AppCompatActivity() {
 
     private fun authenticated(user: User) {
         Logger.info("Authenticated as ${user.name}")
+        retryCount = 0 // 重置重试计数器
 
         settings.setUser(user.name, user.isAdmin)
         requestVersion {
@@ -192,9 +208,17 @@ internal class InitializationActivity : AppCompatActivity() {
         errorCallback: Callback.ErrorCallback
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
-            SrvResolver.resolveIfEnabled(settings)
+            val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
+            val originalUrl = settings.originalUrl ?: settings.url
+            val urlToUse = if (resolvedUrl != originalUrl && resolvedUrl != settings.url) {
+                Logger.info("SRV resolved: $originalUrl -> $resolvedUrl")
+                resolvedUrl
+            } else {
+                Logger.info("SRV lookup failed or unchanged, using: $originalUrl")
+                originalUrl
+            }
             withContext(Dispatchers.Main) {
-                ClientFactory.versionApi(settings)
+                ClientFactory.versionApiWithUrl(settings, urlToUse)
                     .version
                     .enqueue(
                         Callback.callInUI(
