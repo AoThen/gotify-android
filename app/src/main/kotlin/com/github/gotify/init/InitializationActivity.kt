@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.github.gotify.R
 import com.github.gotify.Settings
 import com.github.gotify.SrvResolver
@@ -181,7 +182,13 @@ internal class InitializationActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 ClientFactory.versionApi(settings)
                     .version
-                    .enqueue(Callback.callInUI(this@InitializationActivity, callback, errorCallback))
+                    .enqueue(
+                        Callback.callInUI(
+                            this@InitializationActivity,
+                            callback,
+                            errorCallback
+                        )
+                    )
             }
         }
     }
@@ -202,7 +209,6 @@ internal class InitializationActivity : AppCompatActivity() {
                 options = quickPermissionsOption,
                 callback = action
             )
-
         } else {
             // Android 12 and below
             action()
