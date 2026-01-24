@@ -222,7 +222,7 @@ internal object SrvLookupPure {
     private class ByteReader(private val data: ByteArray) {
         private var pos = 0
 
-        fun position(): Int = pos
+        val position: Int get() = pos
 
         fun readByte(): Int {
             return data[pos++].toInt() and 0xFF
