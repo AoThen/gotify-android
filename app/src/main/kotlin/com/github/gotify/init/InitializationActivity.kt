@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.github.gotify.R
 import com.github.gotify.Settings
 import com.github.gotify.SrvResolver
+import com.github.gotify.Utils
 import com.github.gotify.api.ApiException
 import com.github.gotify.api.Callback
 import com.github.gotify.api.Callback.SuccessCallback
@@ -94,14 +95,30 @@ internal class InitializationActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
             val originalUrl = settings.originalUrl ?: settings.url
-            val urlToUse = if (resolvedUrl != originalUrl && resolvedUrl != settings.url) {
+            val (urlToUse, shouldShowSrvMessage) = if (
+                resolvedUrl != originalUrl &&
+                resolvedUrl != settings.url
+            ) {
                 Logger.info("SRV resolved: $originalUrl -> $resolvedUrl")
-                resolvedUrl
+                resolvedUrl to false
             } else {
-                Logger.info("SRV lookup failed or unchanged, using: $originalUrl")
-                originalUrl
+                if (settings.enableSrvLookup && originalUrl != settings.url) {
+                    Logger.info("SRV lookup failed or unchanged, using: $originalUrl")
+                    originalUrl to true
+                } else {
+                    Logger.info("SRV disabled or already original, using: $originalUrl")
+                    originalUrl to false
+                }
             }
+
             withContext(Dispatchers.Main) {
+                if (shouldShowSrvMessage && settings.enableSrvLookup) {
+                    Utils.showSnackBar(
+                        this@InitializationActivity,
+                        getString(R.string.srv_lookup_failed, originalUrl)
+                    )
+                }
+
                 ClientFactory.userApiWithTokenWithUrl(settings, urlToUse)
                     .currentUser()
                     .enqueue(
