@@ -2,6 +2,8 @@ package com.github.gotify
 
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.tinylog.kotlin.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal object SrvResolver {
 
@@ -26,15 +28,14 @@ internal object SrvResolver {
 
         Logger.info("SRV lookup enabled, re-resolving for domain: $domain")
 
-        val srvResult = SrvLookup.lookup(domain)
+        val srvResult = withContext(Dispatchers.IO) { SrvLookup.lookup(domain) }
         if (srvResult == null) {
             Logger.warn("SRV lookup failed for $domain, using original URL")
             val resolvedUrl = settings.url
             settings.url = originalUrl
             return resolvedUrl
         }
-
-        val resolved = SrvLookup.buildResolvedUrl(originalUrl, srvResult)
+        val resolved = withContext(Dispatchers.IO) { SrvLookup.buildResolvedUrl(originalUrl, srvResult) }
         if (resolved == null) {
             Logger.warn("Failed to build resolved URL for SRV result, using original URL")
             val resolvedUrl = settings.url
