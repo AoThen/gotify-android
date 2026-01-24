@@ -19,7 +19,7 @@
     <string name="not_available">Cannot connect to %s</string>
     <string name="auth_failed">Server returned 401 unauthorized while trying to get current user. This can be caused by deleting the client for this session.</string>
     <string name="other_error">Could not get current user. Server (%1$s) responded with code %2$d: body (first 200 chars): %3$s</string>
-    <string name="srv_lookup_failed">SRV record not found for %1$s, using original URL</string>
+
     <string name="user_action">User action required</string>
     <string name="websocket_closed_logout">Please login, the authentication token isn\'t valid anymore.</string>
     <string name="websocket_closed">Connection closed</string>
