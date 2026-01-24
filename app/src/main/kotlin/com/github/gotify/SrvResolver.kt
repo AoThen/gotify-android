@@ -28,7 +28,7 @@ internal object SrvResolver {
 
         Logger.info("SRV lookup enabled, re-resolving domain: $domain (original: $originalUrl)")
 
-        val srvResult = withContext(Dispatchers.IO) { SrvLookup.lookup(domain) }
+        val srvResult = withContext(Dispatchers.IO) { SrvLookupPure.lookup(domain) }
         if (srvResult == null) {
             Logger.warn("SRV lookup failed for $domain, using original URL: $originalUrl")
             return settings.url

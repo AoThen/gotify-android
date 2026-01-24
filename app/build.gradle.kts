@@ -143,7 +143,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("org.threeten:threetenbp:1.7.1")
-    implementation("dnsjava:dnsjava:3.5.3")
+    // dnsjava removed - using pure Kotlin SRV lookup instead
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // Testing

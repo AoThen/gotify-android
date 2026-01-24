@@ -97,12 +97,13 @@
 -keep class org.apache.oltu.oauth2.** { *; }
 
 # DNSJava (dnsjava library) - ignore platform-specific dependencies
--dontwarn com.sun.jna.**
--dontwarn javax.naming.**
--dontwarn lombok.**
--dontwarn org.slf4j.**
--dontwarn sun.net.spi.nameservice.**
--keep class org.xbill.DNS.** { *; }
+# REMOVED - now using pure Kotlin SRV lookup instead
+# -dontwarn com.sun.jna.**
+# -dontwarn javax.naming.**
+# -dontwarn lombok.**
+# -dontwarn org.slf4j.**
+# -dontwarn sun.net.spi.nameservice.**
+# -keep class org.xbill.DNS.** { *; }
 
 # Obfuscate and optimize
 -renamesourcefileattribute SourceFile
