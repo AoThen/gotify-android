@@ -35,7 +35,7 @@ internal object SrvResolver {
         }
 
         val resolved = withContext(Dispatchers.IO) {
-            SrvLookup.buildResolvedUrl(originalUrl, srvResult)
+            SrvLookupPure.buildResolvedUrl(originalUrl, srvResult)
         }
         if (resolved == null) {
             Logger.warn(
@@ -68,12 +68,12 @@ internal object SrvResolver {
 
         val domain = parsedOriginal.host ?: return settings.url
 
-        val srvResult = SrvLookup.lookup(domain)
+        val srvResult = SrvLookupPure.lookup(domain)
         if (srvResult == null) {
             return settings.url
         }
 
-        val resolved = SrvLookup.buildResolvedUrl(originalUrl, srvResult)
+        val resolved = SrvLookupPure.buildResolvedUrl(originalUrl, srvResult)
         return resolved ?: settings.url
     }
 }

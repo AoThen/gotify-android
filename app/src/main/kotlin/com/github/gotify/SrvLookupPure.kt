@@ -46,6 +46,16 @@ internal object SrvLookupPure {
         return null
     }
 
+    fun buildResolvedUrl(originalUrl: String, srvResult: SrvResult): String? {
+        return try {
+            val scheme = if (originalUrl.startsWith("https://")) "https://" else "http://"
+            "$scheme${srvResult.host}:${srvResult.port}"
+        } catch (e: Exception) {
+            Logger.error(e, "Failed to build resolved URL")
+            null
+        }
+    }
+
     private fun buildDnsQuery(domain: String): ByteArray {
         val transactionId = Random.nextInt(65536).toInt() and 0xFFFF
         val flags = 0x0100
@@ -194,8 +204,7 @@ internal object SrvLookupPure {
                 reader.jumpTo(offset)
                 jumped = true
             } else {
-                val bytes = ByteArray(length)
-                reader.read(bytes)
+                val bytes = reader.readBytes(length)
                 if (name.isNotEmpty()) {
                     name.append(".")
                 }
@@ -223,6 +232,12 @@ internal object SrvLookupPure {
             val high = data[pos++].toInt() and 0xFF
             val low = data[pos++].toInt() and 0xFF
             return (high shl 8) or low
+        }
+
+        fun readBytes(count: Int): ByteArray {
+            val result = data.copyOfRange(pos, pos + count)
+            pos += count
+            return result
         }
 
         fun skip(count: Int) {

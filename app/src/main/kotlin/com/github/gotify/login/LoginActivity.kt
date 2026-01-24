@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.github.gotify.R
 import com.github.gotify.SSLSettings
 import com.github.gotify.Settings
-import com.github.gotify.SrvLookup
+import com.github.gotify.SrvLookupPure
 import com.github.gotify.SrvResult
 import com.github.gotify.Utils
 import com.github.gotify.api.ApiException
@@ -176,11 +176,11 @@ internal class LoginActivity : AppCompatActivity() {
                 val domain = parsedUrl.host!!
                 Logger.info("SRV lookup for domain: $domain")
 
-                val srvResult = SrvLookup.lookup(domain)
+                val srvResult = SrvLookupPure.lookup(domain)
                 if (srvResult != null) {
                     Logger.info("SRV record found: host=${srvResult.host}, port=${srvResult.port}")
 
-                    val resolved = SrvLookup.buildResolvedUrl(url, srvResult)
+                    val resolved = SrvLookupPure.buildResolvedUrl(url, srvResult)
                     if (resolved != null) {
                         Logger.info("SRV resolved URL: $resolved")
                         localResolvedUrl = resolved
