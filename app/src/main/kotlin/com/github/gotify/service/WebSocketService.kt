@@ -41,13 +41,15 @@ import com.github.gotify.messages.MessagesActivity
 import io.noties.markwon.Markwon
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.tinylog.kotlin.Logger
 
 internal class WebSocketService : Service() {
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     companion object {
         private val castAddition = if (BuildConfig.DEBUG) ".DEBUG" else ""
         val NEW_MESSAGE_BROADCAST = "${WebSocketService::class.java.name}.NEW_MESSAGE$castAddition"
@@ -116,7 +118,7 @@ internal class WebSocketService : Service() {
         val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        serviceScope.launch {
             val resolvedUrl = SrvResolver.resolveIfEnabled(settings)
 
             val conn = WebSocketConnection(
