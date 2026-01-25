@@ -1,5 +1,6 @@
 package com.github.gotify
 
+import com.github.gotify.SrvResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -28,7 +29,7 @@ internal object SrvResolver {
 
         Logger.info("SRV lookup enabled, re-resolving domain: $domain (original: $originalUrl)")
 
-        val srvResult = withContext(Dispatchers.IO) { SrvLookupPure.lookup(domain) }
+        val srvResult: SrvResult? = withContext(Dispatchers.IO) { SrvLookupPure.lookup(domain) }
         if (srvResult == null) {
             Logger.warn("SRV lookup failed for $domain, using original URL: $originalUrl")
             return settings.url

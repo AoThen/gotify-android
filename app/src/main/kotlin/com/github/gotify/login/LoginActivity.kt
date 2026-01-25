@@ -176,7 +176,7 @@ internal class LoginActivity : AppCompatActivity() {
                 val domain = parsedUrl.host!!
                 Logger.info("SRV lookup for domain: $domain")
 
-                val srvResult = SrvLookupPure.lookup(domain)
+                val srvResult: SrvResult? = SrvLookupPure.lookup(domain)
                 if (srvResult != null) {
                     Logger.info("SRV record found: host=${srvResult.host}, port=${srvResult.port}")
 
@@ -307,10 +307,11 @@ internal class LoginActivity : AppCompatActivity() {
             binding.checkurl.visibility = View.VISIBLE
 
             if (enableSrvLookup && resolvedSrvResult != null) {
+                val result = resolvedSrvResult
                 binding.checkurl.text = getString(
                     R.string.srv_lookup_resolved,
-                    resolvedSrvResult!!.host,
-                    resolvedSrvResult!!.port.toString()
+                    result!!.host,
+                    result!!.port.toString()
                 )
             } else {
                 binding.checkurl.text = getString(R.string.found_gotify_version, version.version)

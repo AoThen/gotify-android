@@ -1,5 +1,6 @@
 package com.github.gotify
 
+import com.github.gotify.SrvResult
 import java.io.ByteArrayOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -151,20 +152,20 @@ internal object SrvLookupPure {
         if (records.isEmpty()) return null
         if (records.size == 1) return records[0]
 
-        val minPriority = records.minOf { it.priority }
-        val priorityRecords = records.filter { it.priority == minPriority }
+        val minPriority = records.minOf { record: SrvResult -> record.priority }
+        val priorityRecords = records.filter { record: SrvResult -> record.priority == minPriority }
 
         if (priorityRecords.size == 1) {
             return priorityRecords[0]
         }
 
-        val totalWeight = priorityRecords.sumOf { it.weight }
+        val totalWeight = priorityRecords.sumOf { record: SrvResult -> record.weight }
         if (totalWeight == 0) {
             return priorityRecords.random()
         }
 
         var random = Random.nextInt(totalWeight)
-        for (record in priorityRecords) {
+        for (record: SrvResult in priorityRecords) {
             random -= record.weight
             if (random <= 0) {
                 return record
