@@ -102,6 +102,7 @@
 # -dontwarn javax.naming.**
 # -dontwarn lombok.**
 # -dontwarn org.slf4j.**
+-dontwarn org.slf4j.impl.StaticLoggerBinder
 # -dontwarn sun.net.spi.nameservice.**
 # -keep class org.xbill.DNS.** { *; }
 
